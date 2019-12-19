@@ -2,7 +2,14 @@
 
 A practical reactive REST API data store for Angular and ngrx
 
-## Advantages
+* [Features](#Features)
+* [Installation](#Installation)
+* [Quickstart](#Quickstart)
+* [Entity store structure](#EntityStoreStructure)
+* [Dispatching requests to backend API](#DispatchingRequestsToBackendApi)
+* [Configuration in details](#ConfigurationInDetails)
+
+## <a id="Features"></a> Features
 
 - Advanced REST API call status indication (loading, loaded, saving, saved, deleting, deleted) to give you full control over the data transfer process
 - Simplified REST API call status via isBusy store property for those, who need a simplified solution
@@ -12,7 +19,7 @@ A practical reactive REST API data store for Angular and ngrx
 - apiFilter state to keep your filter form in a good shape 
 - Easy API response post-processing - any response from your backend is acceptable 
 
-## Installation
+## <a id="Installation"></a> Installation
 
 #### npm
 ```shell script
@@ -24,7 +31,7 @@ A practical reactive REST API data store for Angular and ngrx
     yarn add ngrx-rest-api-data
 ```
 
-## Quickstart
+## <a id="Quickstart"></a> Quickstart
 
 Create a class for your entity. This class properties have to match the response from your API. For example, let's create a simple entity class for a Person 
 
@@ -112,68 +119,68 @@ const entityStoreConfig = {
 };
 ```
 
-## Entity store structure
+## <a id="EntityStoreStructure"></a> Entity store structure
 
 Each entity store is put as a root element into the global Ngrx state under storeKey put into EntityConfig object.
 In our case, it is "appState.orders" of EntityStoreState type.
 
 #### EntityStoreState
 
-**selectedEntity** (EntityState)
+**selectedEntity** : EntityState
 
 This is where the result of *single* entity API calls (such as findByKey, save or deleteByKey) go to
 
-**collection** (EntityCollectionState)
+**collection** : EntityCollectionState
 
 This is where the result of *collection* API calls (such as getAll) go to
 
 #### EntityCollectionState
 
-**status** (string, values = 'initial', 'loading', 'loaded', 'error')
+**status** : string (values = 'initial', 'loading', 'loaded', 'error')
 
 The current status of collection. No batch save functionality for now on.
 
-**isBusy** (boolean)
+**isBusy** : boolean
 
 Simplified status of the collection. This will be used, when we will add batch save and delete.
 
-**apiFilter** (any)
+**apiFilter** : any
 
 When you request getAll(filter) with some filter, this object will be stored in this part of the state. It is useful to manipulate your filter form, for example.
 
-**entityStates** (EntityState<T>[]);
+**entityStates** : EntityState<T>[];
 
 Each entity in the collection has it's own separate state, stored in this array. Access to entities themselves is done through this array as well. 
 
-**totalEntities** (number)
+**totalEntities** : number
 
 Amount of **total** entities in the collection on the backend. This can be used for pagination.
 
-**error** (any)
+**error** : any
 
 Any errors returned from backed API will be stored here. API response with an error will switch collection to "not-busy, has an error" (isBusy: false, status: 'error'). 
 You can enable a filter form in case of an error, for example.
 
 #### EntityState
 
-**status** (string, values = 'initial', 'loading', 'loaded', 'saving', 'saved', 'deleting', 'deleted', 'error')
+**status** : string (values = 'initial', 'loading', 'loaded', 'saving', 'saved', 'deleting', 'deleted', 'error')
 
 The current status of the entity. You have very strong control over what state the entity is in, as you see.
 
-**isBusy** (boolean)
+**isBusy** : boolean
 
 Simplified status of an entity. Reacts on get, save and delete.
 
-**entity** (T)
+**entity** : T
 
 The actual entity data provided in service type T.
 
-**error** (any)
+**error** : any
 
 Any errors returned from backed API will be stored here. API response with an error will switch collection to "not-busy, has an error" (isBusy: false, status: 'error'). 
 You can enable the entity edit form in case of an error, for example.
 
-## Working with the data
+## <a id="DispatchingRequestsToBackendApi"></a> Dispatching requests to backend API
 
 ### Sending and receiving data from/to the backend
 
@@ -270,27 +277,27 @@ You can access any part of the state by using the usual ngrx select method.
 ```
 
 
-## Configuration in details
+## <a id="ConfigurationInDetails"></a> Configuration in details
 
 #### EntityStoreConfig
 
-*apiUrl* (string)
+**apiUrl** : string
 
 The root URL to access your backend REST API. Entity resources will be accessed via {apiUrl}/{apiPath}, where apiPath is a property of EntityConfig
 
-*busyIndicationDelay* (number, default = 300)
+**busyIndicationDelay** : number = 300
 
-*entities* (object)
+**entities** : object
 
 The keys of this object must match your model class names (Order, Person, etc.) and the value is an EntityConfig, providing all the information on how to manage this entity.
 
-*parseCollectionHttpResponse* (function)
+**parseCollectionHttpResponse** : function(httpResponse: HttpResponse, params: any)
 
 This function takes raw HttpResponse object directly from httpClient and must provide an EntityPage instead.
 In most of the real-world cases, you will have your unique response to get the collection from the backend API. 
 By default, it returns httpResponse.body, which is suitable for a limited amount of cases.
 
-*parseEntityHttpResponse* (function)
+**parseEntityHttpResponse** : function(httpResponse: HttpResponse, params: any)
 
 This function takes raw HttpResponse object directly from httpClient and must provide an entity instance in response.
 In most of the real-world cases your API will return a JSON with the entity, but if you have something specific - use this function to parse the response.
@@ -300,30 +307,30 @@ By default, it returns httpResponse.body, which is suitable for most of the case
 
 #### EntityConfig
 
-*entityName* (string)
+**entityName** : string
 
 Entity name must be the same, as the name of your entity class
 
-*apiPath* (string)
+**apiPath** : string
 
 Entity resources will be accessed via {apiUrl}/{apiPath}, where apiUrl is a property of EntityStoreConfig 
 
-*storeKey* (string)
+**storeKey** : string 
 
 The key in ngrx Store, where your EntityState instance will be put to.
 Unfortunately, all your entity stores will be registered at ngrx Store root. There is no way to make some sub-object at the moment.
 
-*keyProperty* (string, default = "id")
+**keyProperty** string = "id"
 
 The key property name in your entities. Typically it is "id", but we want to give you the flexibility on this.
 
 #### EntityStorePage
 
-*entities* (array, entity type)
+**entities** : T[]
 
 The array of entities, which will be put into your store collection,
 
-*totalEntities* (number)
+**totalEntities** : number
 
 Amount of *total* entities in the collection on the backend. This can be used for pagination.
 
