@@ -134,6 +134,7 @@ This is where the result of *single* entity API calls (such as findByKey, save o
 
 This is where the result of *collection* API calls (such as getAll) go to
 
+---
 #### EntityCollectionState
 
 **status** : string (values = 'initial', 'loading', 'loaded', 'error')
@@ -160,7 +161,7 @@ Amount of **total** entities in the collection on the backend. This can be used 
 
 Any errors returned from backed API will be stored here. API response with an error will switch collection to "not-busy, has an error" (isBusy: false, status: 'error'). 
 You can enable a filter form in case of an error, for example.
-
+---
 #### EntityState
 
 **status** : string (values = 'initial', 'loading', 'loaded', 'saving', 'saved', 'deleting', 'deleted', 'error')
@@ -252,6 +253,8 @@ You can subscribe to built-in observables to display the data from the store in 
 
 **selectedEntityError$** (any) - if you need to unlock the entity edit form on backend error and provide some error indication.
 
+---
+
 #### collection
 
 **entities$** (T[]) - main observable you'll be working with, this is a shortcut with all the entities in the collection.
@@ -305,6 +308,8 @@ In most of the real-world cases your API will return a JSON with the entity, but
 
 By default, it returns httpResponse.body, which is suitable for most of the cases.
 
+---
+
 #### EntityConfig
 
 **entityName** : string
@@ -323,6 +328,8 @@ Unfortunately, all your entity stores will be registered at ngrx Store root. The
 **keyProperty** string = "id"
 
 The key property name in your entities. Typically it is "id", but we want to give you the flexibility on this.
+
+---
 
 #### EntityStorePage
 
