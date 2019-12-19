@@ -161,7 +161,9 @@ Amount of **total** entities in the collection on the backend. This can be used 
 
 Any errors returned from backed API will be stored here. API response with an error will switch collection to "not-busy, has an error" (isBusy: false, status: 'error'). 
 You can enable a filter form in case of an error, for example.
+
 ---
+
 #### EntityState
 
 **status** : string (values = 'initial', 'loading', 'loaded', 'saving', 'saved', 'deleting', 'deleted', 'error')
@@ -243,34 +245,83 @@ You can subscribe to built-in observables to display the data from the store in 
 
 #### selectedEntity
 
-**selectedEntity$** (T) - main observable you'll be working with, it emits the entity you've requested to load, save or delete.
+**selectedEntity$** : T 
 
-**selectedEntityState$** (EntityState) - if you need access to "everything about the entity".
+Shortcut to ``appState.yourEntityStore.selectedEntity.entity`` 
 
-**selectedEntityIsBusy$** (boolean) - if you need to create a simple loading indication.
+The main observable you'll be working with, it emits the entity you've requested to load, save or delete.
 
-**selectedEntityStatus$** (string) - if you need to create a separated loading indication for load/save statuses. 
+**selectedEntityState$** : EntityState
 
-**selectedEntityError$** (any) - if you need to unlock the entity edit form on backend error and provide some error indication.
+Shortcut to ``appState.yourEntityStore.selectedEntity`` 
+
+Use it, if you need access to "everything about the entity".
+
+**selectedEntityIsBusy$** : boolean
+
+Shortcut to ``appState.yourEntityStore.selectedEntity.isBusy`` 
+
+Use it, if you need to create a simple loading indication.
+
+**selectedEntityStatus$** : string
+
+Shortcut to ``appState.yourEntityStore.selectedEntity.status`` 
+
+Use it, if you need to create a separated loading indication for load/save statuses. 
+
+**selectedEntityError$** : any 
+
+Shortcut to ``appState.yourEntityStore.selectedEntity.error`` 
+
+Use it, if you need to unlock the entity edit form on backend error and provide some error indication.
 
 ---
 
 #### collection
 
-**entities$** (T[]) - main observable you'll be working with, this is a shortcut with all the entities in the collection.
+**entities$** : T[] 
 
-**entitiesStates$** (EntityState[]) - if you need the access to "everything about the collection entities states". Useful, if you have a table of entities and want to save (and show the indication) one of those.
+Shortcut to ``appState.yourEntityStore.collection.entityStates.map(entityState => entityState.entity)`` 
 
-**collection$** (EntityCollectionState) - if you need the access to "everything about th collection"
+The main observable you'll be working with, this is a shortcut with all the entities in the collection.
 
-**totalEntities$** (number) - if you need to put "total records found" number on your component. 
+**entityStates$** : EntityState[] 
 
-**collectionIsBusy$** (boolean) - if you need to create a simple collection loading animation.
+Shortcut to ``appState.yourEntityStore.collection.entitityStates`` 
 
-**collectionStatus$** (string) - if you need to create a separated loading indication for load/save statuses.
+Use it, if you need the access to "everything about the collection entities states". Useful, if you have a table of entities and want to save (and show the indication) one of those.
 
-**collectionError$** (any) - if you need to unlock the entity edit form on backend error and provide some error indication.
+**collection$** : EntityCollectionState
 
+Shortcut to ``appState.yourEntityStore.collection`` 
+
+Use it, if you need the access to "everything about the collection"
+
+**totalEntities$** : number
+
+Shortcut to ``appState.yourEntityStore.collection.totalEntities`` 
+
+Use it, if you need to put "total records found" number on your component. 
+
+**collectionIsBusy$** : boolean
+
+Shortcut to ``appState.yourEnityStore.collection.isBusy`` 
+
+Use it, if you need to create a simple collection loading animation.
+
+**collectionStatus$** : string
+
+Shortcut to ``appState.yourEntityStore.collection.status`` 
+
+Use it, if you need to create a separated loading indication for load/save statuses.
+
+**collectionError$** : any
+
+Shortcut to ``appState.youEntityStore.collection.error`` 
+
+Use it, if you need to unlock the entity edit form on backend error and provide some error indication.
+
+--- 
 
 You can access any part of the state by using the usual ngrx select method.
 
