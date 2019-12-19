@@ -1,0 +1,9 @@
+{
+  "name": "ngrx-rest-api-data",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "@angular/core": "^8.2.14",
+    "@angular/http": "^7.2.15",
+    "@ngrx/store": "^8.0.0"
+  }
+}
