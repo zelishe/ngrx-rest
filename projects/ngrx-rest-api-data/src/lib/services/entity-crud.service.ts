@@ -13,15 +13,16 @@ export abstract class EntityCrudService<T> {
 
   protected constructor(
     protected entityName: string,
-    protected httpClient: HttpClient,
-    protected entityStoreConfig: EntityStoreConfig
+    protected entityStoreConfig: EntityStoreConfig,
+    protected httpClient: HttpClient
   ) {
+    console.log('here 1');
     if (!entityStoreConfig || !entityStoreConfig.entities || !entityStoreConfig.entities[entityName]) {
       throw new Error(`EntityStore: entity configuration for ${entityName} was not found. Add it, please`);
     }
   }
 
-  getAll$(filter: any = null): Observable<EntityStorePage<T>> {
+  findAll$(filter: any = null): Observable<EntityStorePage<T>> {
 
     return this.httpClient
       .get(`${this.getApiEndpoint()}${this.getQueryString(filter)}`, { observe: 'response' })
@@ -31,7 +32,6 @@ export abstract class EntityCrudService<T> {
         map(httpResponse => this.entityStoreConfig.parseCollectionHttpResponse(httpResponse, { filter })),
         mergeMap((entityStorePage: EntityStorePage<T>) => {
           if (!entityStorePage || !entityStorePage.entities || !entityStorePage.totalEntities) {
-            console.error(collectionParseErrorMessage);
             return throwError(collectionParseErrorMessage);
           }
           return of(entityStorePage);
@@ -39,7 +39,7 @@ export abstract class EntityCrudService<T> {
       );
   }
 
-  getByKey$(key: any, filter: any = null): Observable<T> {
+  findByKey$(key: any, filter: any = null): Observable<T> {
     return this.httpClient
       .get<T>(`${this.getApiEndpoint()}/${key}`, { observe: 'response' })
       .pipe(
@@ -66,8 +66,6 @@ export abstract class EntityCrudService<T> {
     );
   }
 
-  // === Utility functions =========================================================================================
-
   deleteByKey$(key: number): Observable<T> {
     return this.httpClient
       .delete(`${this.getApiEndpoint()}/${key}`, { observe: 'response' })
@@ -78,6 +76,8 @@ export abstract class EntityCrudService<T> {
       );
   }
 
+  // === Utility functions =========================================================================================
+
   private processEntityHttpResponse(initialHttpResponse: HttpResponse<T>, params: any): Observable<T> {
 
     return of(initialHttpResponse)
@@ -87,7 +87,6 @@ export abstract class EntityCrudService<T> {
         map(httpResponse => this.entityStoreConfig.parseEntityHttpResponse(httpResponse, params)),
         mergeMap((entity: T) => {
           if (!entity) {
-            console.error(entityParseErrorMessage);
             return throwError(entityParseErrorMessage);
           }
           return of(entity);

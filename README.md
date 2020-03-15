@@ -43,7 +43,6 @@ export class Person {
 }
 ```
 Create a basic configuration for ngrx-rest-api-data module, including EntityConfig for the Person
-and add NgrxRestApiModule to your Angular application. Don't forget to import HttpClientModule (@angular/http) and StoreModule (@ngrx/store)
 
 ```typescript
 const entityStoreConfig: EntityStoreConfig = {
@@ -55,6 +54,15 @@ const entityStoreConfig: EntityStoreConfig = {
     }
   }
 };
+
+export default entityStoreConfig;
+```
+
+Add NgrxRestApiModule to your Angular application. Don't forget to import HttpClientModule (@angular/http) and StoreModule (@ngrx/store)
+
+```typescript
+import { NgrxRestApiDataModule } from 'ngrx-rest-api-data';
+import entityStoreConfig from '../../shared/entity-store-config';
 
 @NgModule({
   declarations: [
@@ -79,17 +87,18 @@ import { Person } from './person';
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Store } from '@ngrx/store';
-import { EntityStoreService, EntityStoreConfig } from 'ngrx-rest-api-data';
+import { EntityStoreService } from 'ngrx-rest-api-data';
+
+import entityStoreConfig from '../../shared/entity-store-config';
 
 @Injectable()
 export class PersonService extends EntityStoreService<Person> {
 
   constructor(
     protected httpClient: HttpClient,
-    protected entityStoreConfig: EntityStoreConfig,
     protected store: Store<any>
   ) {
-    super('Person', httpClient, entityStoreConfig, store);
+    super('Person', entityStoreConfig, httpClient, store);
   }
 }
 ```
@@ -117,6 +126,8 @@ const entityStoreConfig = {
     };
   }
 };
+
+export default entityStoreConfig
 ```
 
 ## <a id="EntityStoreStructure"></a> Entity store structure
@@ -132,7 +143,7 @@ This is where the result of *single* entity API calls (such as findByKey, save o
 
 **collection** : EntityCollectionState
 
-This is where the result of *collection* API calls (such as getAll) go to
+This is where the result of *collection* API calls (such as findAll) go to
 
 ---
 #### EntityCollectionState
@@ -147,7 +158,7 @@ Simplified status of the collection. This will be used, when we will add batch s
 
 **apiFilter** : any
 
-When you request getAll(filter) with some filter, this object will be stored in this part of the state. It is useful to manipulate your filter form, for example.
+When you request findAll(filter) with some filter, this object will be stored in this part of the state. It is useful to manipulate your filter form, for example.
 
 **entityStates** : EntityState<T>[];
 
@@ -189,7 +200,7 @@ You can enable the entity edit form in case of an error, for example.
 
 Each of your entity services have the following methods to request data manipulations.
 
-**getAll(filter: any)** 
+**findAll(filter: any)** 
 
 Request: GET + {apiUr}l/{apiPath}?filterParam1=x&filterParam2=y 
 
@@ -202,7 +213,7 @@ This method retrieves collection data from the backend API
  - Total amount of entities is put into "collections.totalEntities" or the appropriate EntityStoreState.
  - entityStoreState.collection switches to { isBusy: false, status: 'loaded' }
 
-**getByKey(key: any)**
+**findByKey(key: number | string)**
 
 Request: GET + {apiUrl}/{apiPath}/{key} 
 
