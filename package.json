@@ -1,6 +1,6 @@
 {
   "name": "ngrx-rest-api-data",
-  "version": "1.0.4",
+  "version": "1.0.6",
   "description": "A practical reactive REST API data store for Angular and ngrx",
   "author": "Sergei Zelentsov <sergei@tapkey.pro>",
   "license": "MIT",
@@ -26,7 +26,8 @@
     "build": "ng build && cpx ./*.md ./dist/ngrx-rest-api-data",
     "test": "ng test",
     "lint": "ng lint",
-    "e2e": "ng e2e"
+    "e2e": "ng e2e",
+    "publish": "npm run build && cd dist/ngrx-rest-api-data && npm publish"
   },
   "private": false,
   "dependencies": {
