@@ -15,7 +15,7 @@ A practical reactive REST API data store for Angular and ngrx
 - Simplified REST API call status via isBusy store property for those, who need a simplified solution
 - Separated (but synchronized) state for the collection and the selected entity
 - Separated status states for each entity in the collection
-- totalElements for the collection to make your pagination easy
+- totalEntities for the collection to make your pagination easy
 - apiFilter state to keep your filter form in a good shape 
 - Easy API response post-processing - any response from your backend is acceptable 
 
@@ -122,7 +122,7 @@ const entityStoreConfig = {
   parseCollectionHttpResponse(httpResponse: HttpResponse<object>, params: any): EntityStorePage<object> {
     return {
       entities: httpResponse.body['content'],
-      totalElements: httpResponse.body['totalElements']
+      totalEntities: httpResponse.body['totalElements']
     };
   }
 };

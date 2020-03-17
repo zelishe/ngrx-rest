@@ -16,7 +16,6 @@ export abstract class EntityCrudService<T> {
     protected entityStoreConfig: EntityStoreConfig,
     protected httpClient: HttpClient
   ) {
-    console.log('here 1');
     if (!entityStoreConfig || !entityStoreConfig.entities || !entityStoreConfig.entities[entityName]) {
       throw new Error(`EntityStore: entity configuration for ${entityName} was not found. Add it, please`);
     }
