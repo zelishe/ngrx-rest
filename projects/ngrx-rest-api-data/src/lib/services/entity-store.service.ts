@@ -91,12 +91,12 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   private createActions() {
 
-    this.actions.setEntities = createAction(`[EntityStore][${this.entityConfig.entityName}] setEntities`, props<{ entities: T[], totalEntities: number, completeStatus: string }>());
+    this.actions.setEntities = createAction(`[EntityStore][${this.entityConfig.entityName}] setEntities`, props<{ entities: T[], totalEntities: number, status: string }>());
     this.actions.findAll = createAction(`[EntityStore][${this.entityConfig.entityName}] findAll`, props<{ apiFilter: any }>());
     this.actions.setEntitiesBusyIndication = createAction(`[EntityStore][${this.entityConfig.entityName}] setEntitiesBusyIndication`, props<{ isBusy: boolean, status: string }>());
     this.actions.setEntitiesError = createAction(`[EntityStore][${this.entityConfig.entityName}] setEntitiesError`, props<{ error: any }>());
 
-    this.actions.setSelectedEntity = createAction(`[EntityStore][${this.entityConfig.entityName}] setSelectedEntity`, props<{ entity: T, completeStatus: string }>());
+    this.actions.setSelectedEntity = createAction(`[EntityStore][${this.entityConfig.entityName}] setSelectedEntity`, props<{ entity: T, status: string }>());
     this.actions.findByKey = createAction(`[EntityStore][${this.entityConfig.entityName}] findByKey`, props<{ key: number | string }>());
     this.actions.save = createAction(`[EntityStore][${this.entityConfig.entityName}] save`, props<{ entity: T }>());
     this.actions.onAfterSave = createAction(`[EntityStore][${this.entityConfig.entityName}] onAfterSave`, props<{ entity: T }>());
@@ -163,12 +163,24 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
   // === Actions dispatchers =========================================================================================
   // =================================================================================================================
 
+  setEntities(entities?: T[], status: string = ENTITY_STORE_STATUS_LOADED) {
+    this.store.dispatch(this.actions.setEntities(this.entityName, {
+      entities,
+      totalEntities: entities.length,
+      status
+    }))
+  }
+
   findAll(apiFilter?: any) {
-    this.store.dispatch(this.actions.findAll({apiFilter: apiFilter}));
+    this.store.dispatch(this.actions.findAll({ apiFilter }));
   }
 
   findByKey(key: number | string) {
     this.store.dispatch(this.actions.findByKey({ key }));
+  }
+
+  setSelectedEntity(entity: T, status = ENTITY_STORE_STATUS_LOADED) {
+    this.store.dispatch(this.actions.setSelectedEntity({ entity, status }));
   }
 
   save(entity: T) {
@@ -194,7 +206,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       this.store.dispatch(this.actions.setEntities({
         entities: response.entities,
         totalEntities: response.totalEntities,
-        completeStatus: ENTITY_STORE_STATUS_LOADED
+        status: ENTITY_STORE_STATUS_LOADED
       }));
     });
 
@@ -221,7 +233,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       .subscribe(entity => {
         this.store.dispatch(this.actions.setSelectedEntity({
           entity,
-          completeStatus: ENTITY_STORE_STATUS_LOADED
+          status: ENTITY_STORE_STATUS_LOADED
         }));
       });
 
@@ -265,18 +277,18 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
   // === API response processing actions ==============================================================================
   // ==================================================================================================================
 
-  private onSetEntities(state, actionProps: { entities: T[], totalEntities: number, completeStatus: string }) {
+  private onSetEntities(state, actionProps: { entities: T[], totalEntities: number, status: string }) {
 
     return {
       ...state,
       collection: {
         ...state.collection,
         isBusy: false,
-        status: actionProps.completeStatus,
+        status: actionProps.status,
         entityStates: actionProps.entities.map(entity => {
           return {
             isBusy: false,
-            status: actionProps.completeStatus,
+            status: actionProps.status,
             entity
           } as EntityState<T>;
         }),
@@ -314,12 +326,12 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   }
 
-  private onSetSelectedEntity(state, actionProps: { entity: T, completeStatus: string }) {
+  private onSetSelectedEntity(state, actionProps: { entity: T, status: string }) {
 
     const updatedEntityState = {
       ...state.selectedEntity,
       isBusy: false,
-      status: actionProps.completeStatus,
+      status: actionProps.status,
       entity: actionProps.entity,
       error: null
     };
@@ -421,9 +433,11 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       const existingEntityIndex = collection.entityStates.findIndex(entityState => entityState.entity[keyProperty] === updatedEntityState.entity[keyProperty]);
 
       if (existingEntityIndex !== -1) {
-        const updatedCollection = { ...collection };
-        collection.entityStates[existingEntityIndex] = updatedEntityState;
-        return updatedCollection;
+        const entityStates = [ ...collection.entityStates ];
+        entityStates[existingEntityIndex] = updatedEntityState;
+        collection.entityStates = entityStates;
+
+        return collection;
       }
     }
 

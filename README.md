@@ -7,6 +7,8 @@ A practical reactive REST API data store for Angular and ngrx
 * [Quickstart](#Quickstart)
 * [Entity store structure](#EntityStoreStructure)
 * [Dispatching requests to backend API](#DispatchingRequestsToBackendApi)
+* [Setting store state manually](#SettingStoreStateManually)
+* [Displaying the data](#DisplayingData)
 * [Configuration in details](#ConfigurationInDetails)
 
 ## <a id="Features"></a> Features
@@ -196,8 +198,6 @@ You can enable the entity edit form in case of an error, for example.
 
 ## <a id="DispatchingRequestsToBackendApi"></a> Dispatching requests to backend API
 
-### Sending and receiving data from/to the backend
-
 Each of your entity services have the following methods to request data manipulations.
 
 **findAll(filter: any)** 
@@ -250,7 +250,19 @@ Request: DELETE + {apiUrl}/{apiPath}/{key}
  - selectedEntity is switched to { isBusy: false, status: 'saved' }
  - **IMPORTANT** If this entity is present in "collection" part of the state, it will be removed from there as well. That entity state will also switch to 'deleting' status, when appropriate event will be fired.
 
-### Displaying the data
+## <a id="SettingStoreStateManually"></a> Setting store state manually
+
+You can use following methods to set state manually
+
+**setSelectedEntity(entity: T, status: string = 'loaded')**
+
+This method sets selected entity of the store slice with appropriate status.
+
+**setEntities(entities: T[], status: string = 'loaded')** 
+
+This method sets the collection entities with appropriate status.
+
+## <a id="DisplayingData"></a> Displaying the data
 
 You can subscribe to built-in observables to display the data from the store in a reactive way.
 
