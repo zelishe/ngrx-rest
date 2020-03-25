@@ -30,8 +30,8 @@ export abstract class EntityCrudService<T> {
         take(1),
         map(httpResponse => this.entityStoreConfig.parseCollectionHttpResponse(httpResponse, { filter })),
         mergeMap((entityStorePage: EntityStorePage<T>) => {
-          if (!entityStorePage || !entityStorePage.entities || !entityStorePage.totalEntities) {
-            return throwError(collectionParseErrorMessage);
+          if (!entityStorePage || !Array.isArray(entityStorePage.entities) || isNaN(+entityStorePage.totalEntities)) {
+            return throwError(`${collectionParseErrorMessage} (${this.entityName})`);
           }
           return of(entityStorePage);
         })
@@ -86,7 +86,7 @@ export abstract class EntityCrudService<T> {
         map(httpResponse => this.entityStoreConfig.parseEntityHttpResponse(httpResponse, params)),
         mergeMap((entity: T) => {
           if (!entity) {
-            return throwError(entityParseErrorMessage);
+            return throwError(`${entityParseErrorMessage}  (${this.entityName})`);
           }
           return of(entity);
         })

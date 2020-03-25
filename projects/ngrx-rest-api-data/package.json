@@ -1,6 +1,6 @@
 {
   "name": "ngrx-rest-api-data",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "description": "A practical reactive REST API data store for Angular and ngrx",
   "author": "Sergei Zelentsov <sergei@tapkey.pro>",
   "license": "MIT",
