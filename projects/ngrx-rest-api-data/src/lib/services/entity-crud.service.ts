@@ -1,7 +1,12 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, of, pipe, throwError } from 'rxjs';
 import { catchError, map, mergeMap, take } from 'rxjs/operators';
-import { EntityStoreConfig } from '../models/entity-store-config';
+import {
+  defaultEntityConfig,
+  defaultEntityStoreConfig,
+  EntityConfig,
+  EntityStoreConfig
+} from '../models/entity-store-config';
 import { EntityStorePage } from '../models/entity-store-page';
 
 import qs from 'qs';
@@ -9,42 +14,58 @@ import qs from 'qs';
 const collectionParseErrorMessage = '[NgrxRestApiStore][EntityCrudService] Could not parse http response. Define or update parseCollectionHttpResponse in entityStoreConfig, please';
 const entityParseErrorMessage     = '[NgrxRestApiStore][EntityCrudService] Could not parse http response. Define or update parseEntityHttpResponse in entityStoreConfig, please';
 
-export abstract class EntityCrudService<T> {
+export class EntityCrudService<T> {
 
-  protected constructor(
+  entityStoreConfig: EntityStoreConfig;
+  entityConfig: EntityConfig;
+
+  constructor(
     protected entityName: string,
-    protected entityStoreConfig: EntityStoreConfig,
+    protected partialEntityStoreConfig: EntityStoreConfig,
     protected httpClient: HttpClient
   ) {
-    if (!entityStoreConfig || !entityStoreConfig.entities || !entityStoreConfig.entities[entityName]) {
+    if (!partialEntityStoreConfig || !partialEntityStoreConfig.entities || !partialEntityStoreConfig.entities[entityName]) {
       throw new Error(`EntityStore: entity configuration for ${entityName} was not found. Add it, please`);
     }
+
+    this.entityStoreConfig = {
+      ...defaultEntityStoreConfig,
+      ...partialEntityStoreConfig
+    };
+
+    this.entityConfig = {
+      ...defaultEntityConfig,
+      entityName,
+      ...this.entityStoreConfig.entities[entityName]
+    };
+
   }
 
   findAll$(filter: any = null): Observable<EntityStorePage<T>> {
 
     return this.httpClient
-      .get(`${this.getApiEndpoint()}${this.getQueryString(filter)}`, { observe: 'response' })
+      .get(`${this.getApiEndpoint()}${EntityCrudService.getQueryString(filter)}`, { observe: 'response' })
       .pipe(
-        catchError(this.onError),
-        take(1),
         map(httpResponse => this.entityStoreConfig.parseCollectionHttpResponse(httpResponse, { filter })),
         mergeMap((entityStorePage: EntityStorePage<T>) => {
           if (!entityStorePage || !Array.isArray(entityStorePage.entities) || isNaN(+entityStorePage.totalEntities)) {
             return throwError(`${collectionParseErrorMessage} (${this.entityName})`);
           }
           return of(entityStorePage);
-        })
+        }),
+        catchError(EntityCrudService.onError)
       );
   }
 
   findByKey$(key: any, filter: any = null): Observable<T> {
+
     return this.httpClient
       .get<T>(`${this.getApiEndpoint()}/${key}`, { observe: 'response' })
       .pipe(
         mergeMap(httpResponse => {
           return this.processEntityHttpResponse(httpResponse, { key, filter });
-        })
+        }),
+        catchError(EntityCrudService.onError)
       );
   }
 
@@ -61,7 +82,8 @@ export abstract class EntityCrudService<T> {
     return obs$.pipe(
       mergeMap((httpResponse: HttpResponse<T>) => {
         return this.processEntityHttpResponse(httpResponse, { entity });
-      })
+      }),
+      catchError(EntityCrudService.onError)
     );
   }
 
@@ -71,7 +93,8 @@ export abstract class EntityCrudService<T> {
       .pipe(
         mergeMap((httpResponse: HttpResponse<T>) => {
           return this.processEntityHttpResponse(httpResponse, { key });
-        })
+        }),
+        catchError(EntityCrudService.onError)
       );
   }
 
@@ -81,12 +104,12 @@ export abstract class EntityCrudService<T> {
 
     return of(initialHttpResponse)
       .pipe(
-        catchError(this.onError),
+        catchError(EntityCrudService.onError),
         take(1),
         map(httpResponse => this.entityStoreConfig.parseEntityHttpResponse(httpResponse, params)),
         mergeMap((entity: T) => {
           if (!entity) {
-            return throwError(`${entityParseErrorMessage}  (${this.entityName})`);
+            return throwError(`${entityParseErrorMessage} (${this.entityName})`);
           }
           return of(entity);
         })
@@ -94,16 +117,16 @@ export abstract class EntityCrudService<T> {
 
   }
 
-  private getApiEndpoint() {
+  getApiEndpoint() {
     return `${this.entityStoreConfig.apiUrl}/${this.entityStoreConfig.entities[this.entityName].apiPath}`;
   }
 
-  private getQueryString(query: any = null) {
+  static getQueryString(query: any = null) {
     const queryString = qs.stringify(query);
     return ((queryString !== '') ? '?' : '') + queryString;
   }
 
-  private onError(err) {
+  static onError(err) {
     return throwError(err);
   }
 

@@ -74,7 +74,7 @@ import entityStoreConfig from '../../shared/entity-store-config';
     BrowserModule,
     HttpClientModule,
     StoreModule.forRoot({}),
-    NgrxRestApiDataModule.forRoot(entityStoreConfig)
+    NgrxRestApiDataModule
   ],
   providers: [],
   bootstrap: [AppComponent]

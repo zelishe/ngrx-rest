@@ -21,8 +21,6 @@ export const ENTITY_STORE_STATUS_ERROR = 'error';
 
 export class EntityStoreService<T> extends EntityCrudService<T> {
 
-  entityConfig: EntityConfig;
-
   selectedEntity$: Observable<T>;
   selectedEntityState$: Observable<EntityState<T>>;
   selectedEntityStatus$: Observable<string>;
@@ -72,17 +70,11 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   constructor(
     protected entityName: string,
-    protected entityStoreConfig: EntityStoreConfig,
+    protected partialEntityStoreConfig: EntityStoreConfig,
     protected httpClient: HttpClient,
     protected store: Store<any>
   ) {
-    super(entityName, entityStoreConfig, httpClient);
-
-    this.entityConfig = {
-      ...defaultEntityConfig,
-      entityName: entityName,
-      ...entityStoreConfig.entities[entityName]
-    };
+    super(entityName, partialEntityStoreConfig, httpClient);
 
     this.createActions();
     this.createReducer();
@@ -91,19 +83,19 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   private createActions() {
 
-    this.actions.setEntities = createAction(`[EntityStore][${this.entityConfig.entityName}] setEntities`, props<{entities: T[], totalEntities: number, status: string}>());
-    this.actions.findAll = createAction(`[EntityStore][${this.entityConfig.entityName}] findAll`, props<{apiFilter: any}>());
-    this.actions.setEntitiesBusyIndication = createAction(`[EntityStore][${this.entityConfig.entityName}] setEntitiesBusyIndication`, props<{isBusy: boolean, status: string}>());
-    this.actions.setEntitiesError = createAction(`[EntityStore][${this.entityConfig.entityName}] setEntitiesError`, props<{error: any}>());
+    this.actions.setEntities = createAction(`[EntityStore][${this.entityName}] setEntities`, props<{entities: T[], totalEntities: number, status: string}>());
+    this.actions.findAll = createAction(`[EntityStore][${this.entityName}] findAll`, props<{apiFilter: any}>());
+    this.actions.setEntitiesBusyIndication = createAction(`[EntityStore][${this.entityName}] setEntitiesBusyIndication`, props<{isBusy: boolean, status: string}>());
+    this.actions.setEntitiesError = createAction(`[EntityStore][${this.entityName}] setEntitiesError`, props<{error: any}>());
 
-    this.actions.setSelectedEntity = createAction(`[EntityStore][${this.entityConfig.entityName}] setSelectedEntity`, props<{entity: T, status: string}>());
-    this.actions.findByKey = createAction(`[EntityStore][${this.entityConfig.entityName}] findByKey`, props<{key: number | string}>());
-    this.actions.save = createAction(`[EntityStore][${this.entityConfig.entityName}] save`, props<{entity: T}>());
-    this.actions.onAfterSave = createAction(`[EntityStore][${this.entityConfig.entityName}] onAfterSave`, props<{entity: T}>());
-    this.actions.deleteByKey = createAction(`[EntityStore][${this.entityConfig.entityName}] deleteByKey`, props<{key: any}>());
-    this.actions.onAfterDeleteByKey = createAction(`[EntityStore][${this.entityConfig.entityName}] onAfterDeleteByKey`, props<{key: any}>());
-    this.actions.setSelectedEntityBusyIndication = createAction(`[EntityStore][${this.entityConfig.entityName}] setSelectedEntityBusyIndication`, props<{isBusy: boolean, status: string, key?: any}>());
-    this.actions.setSelectedEntityError = createAction(`[EntityStore][${this.entityConfig.entityName}] setSelectedEntityError`, props<{error: any}>());
+    this.actions.setSelectedEntity = createAction(`[EntityStore][${this.entityName}] setSelectedEntity`, props<{entity: T, status: string}>());
+    this.actions.findByKey = createAction(`[EntityStore][${this.entityName}] findByKey`, props<{key: number | string}>());
+    this.actions.save = createAction(`[EntityStore][${this.entityName}] save`, props<{entity: T}>());
+    this.actions.onAfterSave = createAction(`[EntityStore][${this.entityName}] onAfterSave`, props<{entity: T}>());
+    this.actions.deleteByKey = createAction(`[EntityStore][${this.entityName}] deleteByKey`, props<{key: any}>());
+    this.actions.onAfterDeleteByKey = createAction(`[EntityStore][${this.entityName}] onAfterDeleteByKey`, props<{key: any}>());
+    this.actions.setSelectedEntityBusyIndication = createAction(`[EntityStore][${this.entityName}] setSelectedEntityBusyIndication`, props<{isBusy: boolean, status: string, key?: any}>());
+    this.actions.setSelectedEntityError = createAction(`[EntityStore][${this.entityName}] setSelectedEntityError`, props<{error: any}>());
 
   }
 
@@ -198,15 +190,11 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   private onFindAll(state, actionProps: {apiFilter: any, type: string}) {
 
-    this.constructApiCall$(
-      SUB_STORE_KEY_ENTITIES,
-      this.findAll$(actionProps.apiFilter),
-      ENTITY_STORE_STATUS_LOADING
-      )
-      .subscribe((response: EntityStorePage<T>) => {
+    this.constructApiCall$(SUB_STORE_KEY_ENTITIES, this.findAll$(actionProps.apiFilter), ENTITY_STORE_STATUS_LOADING)
+      .subscribe((entityStorePage: EntityStorePage<T>) => {
         this.store.dispatch(this.actions.setEntities({
-          entities: response.entities,
-          totalEntities: response.totalEntities,
+          entities: entityStorePage.entities,
+          totalEntities: entityStorePage.totalEntities,
           status: ENTITY_STORE_STATUS_LOADED
         }));
       });
@@ -225,12 +213,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   private onFindByKey(state, actionProps: {key: number | string}) {
 
-    this.constructApiCall$(
-      SUB_STORE_KEY_SELECTED_ENTITY,
-      this.findByKey$(actionProps.key),
-      ENTITY_STORE_STATUS_LOADING,
-      actionProps.key
-      )
+    this.constructApiCall$(SUB_STORE_KEY_SELECTED_ENTITY, this.findByKey$(actionProps.key), ENTITY_STORE_STATUS_LOADING, actionProps.key)
       .subscribe(entity => {
         this.store.dispatch(this.actions.setSelectedEntity({
           entity,
@@ -246,12 +229,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
     const key = (actionProps.entity[this.entityConfig.keyProperty]) ? actionProps.entity[this.entityConfig.keyProperty] : null;
 
-    this.constructApiCall$(
-      SUB_STORE_KEY_SELECTED_ENTITY,
-      this.save$(actionProps.entity),
-      ENTITY_STORE_STATUS_SAVING,
-      key
-      )
+    this.constructApiCall$(SUB_STORE_KEY_SELECTED_ENTITY, this.save$(actionProps.entity), ENTITY_STORE_STATUS_SAVING, key)
       .subscribe((entity: T) => {
         this.store.dispatch(this.actions.onAfterSave({entity}));
       });
@@ -474,10 +452,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     }
 
     return combineLatest(
-      of(true).pipe(
-        delay(this.entityStoreConfig.busyIndicationDelay),
-        startWith(false)
-      ),
+      of(true).pipe(delay(this.entityStoreConfig.busyIndicationDelay), startWith(false)),
       apiCall$.pipe(startWith(null)),
       (busyIndicationDelayStatus, responseData) => {
 
@@ -492,15 +467,16 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
         return null;
 
-      })
-      .pipe(
-        catchError(error => {
-          this.store.dispatch(setErrorAction({error}));
-          return null;
-        }),
-        filter(responseData => !!responseData),  // We pass only valid data with response (we don't care about indicationDelay)
-        take(1)                                     // We pass only 1 valid data response (2nd will be triggered with { busyIndicationStatus: true, responseData: [] }, we don't need it
-      );
+      }
+    )
+    .pipe(
+      catchError(error => {
+        this.store.dispatch(setErrorAction({error}));
+        return null;
+      }),
+      filter(responseData => !!responseData),  // We pass only valid data with response (we don't care about indicationDelay)
+      take(1)                                     // We pass only 1 valid data response (2nd will be triggered with { busyIndicationStatus: true, responseData: [] }, we don't need it
+    );
 
   }
 
