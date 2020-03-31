@@ -2,8 +2,8 @@ import { createAction, createReducer, on, props, select, Store } from '@ngrx/sto
 import { defaultEntityConfig, EntityConfig, EntityStoreConfig } from '../models/entity-store-config';
 import { HttpClient } from '@angular/common/http';
 import { EntityCrudService } from './entity-crud.service';
-import { catchError, delay, filter, map, startWith, take } from 'rxjs/operators';
-import { combineLatest, Observable, of } from 'rxjs';
+import { catchError, delay, filter, map, startWith, take, withLatestFrom } from 'rxjs/operators';
+import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { EntityCollectionState, EntityState, EntityStoreState } from '../models/entity-state';
 import { EntityStorePage } from '../models/entity-store-page';
 
@@ -27,6 +27,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
   selectedEntityIsBusy$: Observable<boolean>;
   selectedEntityError$: Observable<any>;
 
+  apiFilter$: BehaviorSubject<any> = new BehaviorSubject<any>(null);
   entities$: Observable<T[]>;
   entityStates$: Observable<EntityState<T>[]>;
   collection$: Observable<EntityCollectionState<T>>;
@@ -93,7 +94,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     this.actions.save = createAction(`[EntityStore][${this.entityName}] save`, props<{entity: T}>());
     this.actions.onAfterSave = createAction(`[EntityStore][${this.entityName}] onAfterSave`, props<{entity: T}>());
     this.actions.deleteByKey = createAction(`[EntityStore][${this.entityName}] deleteByKey`, props<{key: any}>());
-    this.actions.onAfterDeleteByKey = createAction(`[EntityStore][${this.entityName}] onAfterDeleteByKey`, props<{key: any}>());
+    this.actions.onAfterDeleteByKey = createAction(`[EntityStore][${this.entityName}] onAfterDeleteByKey`, props<{entity: T}>());
     this.actions.setSelectedEntityBusyIndication = createAction(`[EntityStore][${this.entityName}] setSelectedEntityBusyIndication`, props<{isBusy: boolean, status: string, key?: any}>());
     this.actions.setSelectedEntityError = createAction(`[EntityStore][${this.entityName}] setSelectedEntityError`, props<{error: any}>());
 
@@ -136,6 +137,11 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     this.selectedEntityStatus$ = this.store.select(appState => appState[storeKey].selectedEntity.status);
     this.selectedEntityError$ = this.store.select(appState => appState[storeKey].selectedEntity.error);
 
+    this.apiFilter$ = this.convertObservableToBehaviorSubject<any>(
+      this.store.select(appState => appState[storeKey].collection.apiFilter),
+      null
+    );
+
     this.entities$ = this.store.pipe(
       select(appState => appState[storeKey].collection),
       map(collection => {
@@ -166,6 +172,14 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   findAll(apiFilter?: any) {
     this.store.dispatch(this.actions.findAll({apiFilter}));
+  }
+
+  reloadAll() {
+    this.store.dispatch(
+      this.actions.findAll({
+        apiFilter: this.apiFilter$.getValue()
+      })
+    );
   }
 
   findByKey(key: number | string) {
@@ -244,10 +258,10 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       this.deleteByKey$(actionProps.key),
       ENTITY_STORE_STATUS_DELETING,
       actionProps.key
-      )
-      .subscribe((entity: T) => {
-        this.store.dispatch(this.actions.onAfterDeleteByKey({entity}));
-      });
+    )
+    .subscribe((entity: T) => {
+      this.store.dispatch(this.actions.onAfterDeleteByKey({entity}));
+    });
 
     return {...state};
   }
@@ -386,16 +400,15 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
     const updatedState = {...state};
 
-    const updatedEntityState = {
-      ...state.selectedEntity,
-      entity: null,
-      isBusy: false,
-      status: ENTITY_STORE_STATUS_DELETED,
-      error: null
-    };
-
+    // We trigger "deleted" status only if this entity was previously selected and keys matching
     if (state.selectedEntity.entity && state.selectedEntity.entity[keyProperty] === actionProps.entity[keyProperty]) {
-      updatedState.selectedEntity = updatedEntityState;
+      updatedState.selectedEntity = {
+        ...state.selectedEntity,
+        entity: actionProps.entity,
+        isBusy: false,
+        status: ENTITY_STORE_STATUS_DELETED,
+        error: null
+      };
     }
 
     // Removing deleted entity from state.entityStates, if it's found there
@@ -478,6 +491,18 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       take(1)                                     // We pass only 1 valid data response (2nd will be triggered with { busyIndicationStatus: true, responseData: [] }, we don't need it
     );
 
+  }
+
+  private convertObservableToBehaviorSubject<T>(observable: Observable<T>, initValue: T): BehaviorSubject<T> {
+    const subject = new BehaviorSubject(initValue);
+
+    observable.subscribe({
+      complete: () => subject.complete(),
+      error: error => subject.error(error),
+      next: x => subject.next(x)
+    });
+
+    return subject;
   }
 
 

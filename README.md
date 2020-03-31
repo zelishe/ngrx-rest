@@ -213,6 +213,12 @@ This method retrieves collection data from the backend API
  - Total amount of entities is put into "collections.totalEntities" or the appropriate EntityStoreState.
  - entityStoreState.collection switches to { isBusy: false, status: 'loaded' }
 
+**reloadAll()**
+
+Request: GET + {apiUr}l/{apiPath}?filterParam1=x&filterParam2=y
+
+This method simply re-sends the findAll() query with current apiFilter. Use it to manually refresh the whole collection.
+
 **findByKey(key: number | string)**
 
 Request: GET + {apiUrl}/{apiPath}/{key} 
@@ -301,6 +307,10 @@ Use it, if you need to unlock the entity edit form on backend error and provide 
 ---
 
 #### collection
+
+**apiFilter$**: any
+
+API filter observable. Use it, if you need access to current collection filter object. It can be used in combination with findAll() to manually reload the collection. 
 
 **entities$** : T[] 
 
