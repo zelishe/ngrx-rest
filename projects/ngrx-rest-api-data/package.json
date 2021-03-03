@@ -11,7 +11,18 @@
   "bugs": {
     "url": "https://github.com/zelishe/ngrx-rest-api-data/issues"
   },
-  "keywords": [ "angular", "ngrx", "rest", "api", "store", "state", "reactive" ],
+  "keywords": [
+    "angular",
+    "ngrx",
+    "rest",
+    "api",
+    "store",
+    "state",
+    "reactive"
+  ],
+  "dependencies": {
+    "tslib": "^2.0.0"
+  },
   "peerDependencies": {
     "@angular/core": "^8.2.14",
     "@angular/http": "^7.2.15",
