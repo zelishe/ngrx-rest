@@ -2,11 +2,7 @@ import { createAction, createReducer, on, props, select, Store } from '@ngrx/sto
 import { EntityStoreConfig } from '../models/entity-store-config';
 import { HttpClient } from '@angular/common/http';
 import { EntityCrudService } from './entity-crud.service';
-<<<<<<< HEAD
 import { catchError, delay, filter, map, startWith, take } from 'rxjs/operators';
-=======
-import { catchError, delay, filter, map, startWith, take, withLatestFrom } from 'rxjs/operators';
->>>>>>> 232e40a081ad5fc7abef128a8512e44aafc43a72
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { EntityCollectionState, EntityState, EntityStoreState } from '../models/entity-state';
 import { EntityStorePage } from '../models/entity-store-page';
@@ -89,7 +85,6 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     this.createObservables();
   }
 
-<<<<<<< HEAD
   createActions(additionalActions = {}) {
 
     this.actions = {
@@ -108,23 +103,6 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       setSelectedEntityError: createAction(`[EntityStore][${this.entityName}] setSelectedEntityError`, props<{error: any}>()),
       ...additionalActions
     };
-=======
-  private createActions() {
-
-    this.actions.setEntities = createAction(`[EntityStore][${this.entityName}] setEntities`, props<{entities: T[], totalEntities: number, status: string}>());
-    this.actions.findAll = createAction(`[EntityStore][${this.entityName}] findAll`, props<{apiFilter: any}>());
-    this.actions.setEntitiesBusyIndication = createAction(`[EntityStore][${this.entityName}] setEntitiesBusyIndication`, props<{isBusy: boolean, status: string}>());
-    this.actions.setEntitiesError = createAction(`[EntityStore][${this.entityName}] setEntitiesError`, props<{error: any}>());
-
-    this.actions.setSelectedEntity = createAction(`[EntityStore][${this.entityName}] setSelectedEntity`, props<{entity: T, status: string}>());
-    this.actions.findByKey = createAction(`[EntityStore][${this.entityName}] findByKey`, props<{key: number | string}>());
-    this.actions.save = createAction(`[EntityStore][${this.entityName}] save`, props<{entity: T}>());
-    this.actions.onAfterSave = createAction(`[EntityStore][${this.entityName}] onAfterSave`, props<{entity: T}>());
-    this.actions.deleteByKey = createAction(`[EntityStore][${this.entityName}] deleteByKey`, props<{key: any}>());
-    this.actions.onAfterDeleteByKey = createAction(`[EntityStore][${this.entityName}] onAfterDeleteByKey`, props<{entity: T}>());
-    this.actions.setSelectedEntityBusyIndication = createAction(`[EntityStore][${this.entityName}] setSelectedEntityBusyIndication`, props<{isBusy: boolean, status: string, key?: any}>());
-    this.actions.setSelectedEntityError = createAction(`[EntityStore][${this.entityName}] setSelectedEntityError`, props<{error: any}>());
->>>>>>> 232e40a081ad5fc7abef128a8512e44aafc43a72
 
   }
 
@@ -190,7 +168,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
   // === Actions dispatchers =========================================================================================
   // =================================================================================================================
 
-  public setEntities(entities?: T[], status: string = ENTITY_STORE_STATUS_LOADED) {
+  setEntities(entities?: T[], status: string = ENTITY_STORE_STATUS_LOADED) {
 
     this.store.dispatch(this.actions.setEntities({
       entities,
@@ -199,15 +177,11 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     }))
   }
 
-  public findAll(apiFilter?: any) {
+  findAll(apiFilter?: any) {
     this.store.dispatch(this.actions.findAll({apiFilter}));
   }
 
-<<<<<<< HEAD
-  public reloadAll() {
-=======
   reloadAll() {
->>>>>>> 232e40a081ad5fc7abef128a8512e44aafc43a72
     this.store.dispatch(
       this.actions.findAll({
         apiFilter: this.apiFilter$.getValue()
@@ -215,11 +189,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     );
   }
 
-<<<<<<< HEAD
-  public findByKey(key: number | string) {
-=======
   findByKey(key: number | string) {
->>>>>>> 232e40a081ad5fc7abef128a8512e44aafc43a72
     this.store.dispatch(this.actions.findByKey({key}));
   }
 
@@ -451,7 +421,14 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     // Removing deleted entity from state.entityStates, if it's found there
     const existingEntityIndex = updatedState.collection.entityStates.findIndex(entityState => entityState.entity[keyProperty] === actionProps.entity[keyProperty]);
     if (existingEntityIndex !== -1) {
-      updatedState.collection.entityStates.splice(existingEntityIndex, 1);
+      const updatedCollection = { ...state.collection };
+      const updatedEntityStates = [ ...updatedCollection.entityStates ];
+      updatedEntityStates.splice(existingEntityIndex, 1);
+      updatedState.collection = {
+        ...updatedCollection,
+        entityStates: updatedEntityStates,
+        totalEntities: updatedState.collection.totalEntities - 1
+      };
     }
 
     return updatedState;
@@ -545,18 +522,5 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
     return subject;
   }
-
-  private convertObservableToBehaviorSubject<T>(observable: Observable<T>, initValue: T): BehaviorSubject<T> {
-    const subject = new BehaviorSubject(initValue);
-
-    observable.subscribe({
-      complete: () => subject.complete(),
-      error: error => subject.error(error),
-      next: x => subject.next(x)
-    });
-
-    return subject;
-  }
-
 
 }
