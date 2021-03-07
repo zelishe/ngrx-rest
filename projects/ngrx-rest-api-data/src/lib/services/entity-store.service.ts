@@ -2,7 +2,7 @@ import { createAction, createReducer, on, props, select, Store } from '@ngrx/sto
 import { EntityStoreConfig } from '../models/entity-store-config';
 import { HttpClient } from '@angular/common/http';
 import { EntityCrudService } from './entity-crud.service';
-import { catchError, delay, filter, map, startWith, take } from 'rxjs/operators';
+import { catchError, delay, filter, map, startWith, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { EntityCollectionState, EntityState, EntityStoreState } from '../models/entity-state';
 import { EntityStorePage } from '../models/entity-store-page';
@@ -82,7 +82,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
     this.createActions();
     this.createReducer();
-    this.createObservables();
+    this.createSelectors();
   }
 
   createActions(additionalActions = {}) {
@@ -93,8 +93,9 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       setEntitiesBusyIndication: createAction(`[EntityStore][${this.entityName}] setEntitiesBusyIndication`, props<{isBusy: boolean, status: string}>()),
       setEntitiesError: createAction(`[EntityStore][${this.entityName}] setEntitiesError`, props<{error: any}>()),
 
+      setApiFilter: createAction(`[EntityStore][${this.entityName}] setApiFilter`, props<{apiFilter: any}>()),
       setSelectedEntity: createAction(`[EntityStore][${this.entityName}] setSelectedEntity`, props<{entity: T, status: string}>()),
-      findByKey: createAction(`[EntityStore][${this.entityName}] findByKey`, props<{key: number | string}>()),
+      findByKey: createAction(`[EntityStore][${this.entityName}] findByKey`, props<{key: number | string, filter?: any}>()),
       save: createAction(`[EntityStore][${this.entityName}] save`, props<{entity: T}>()),
       onAfterSave: createAction(`[EntityStore][${this.entityName}] onAfterSave`, props<{entity: T}>()),
       deleteByKey: createAction(`[EntityStore][${this.entityName}] deleteByKey`, props<{key: any}>()),
@@ -119,6 +120,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       on(this.actions.findAll, this.onFindAll.bind(this)),
       on(this.actions.setEntitiesError, this.onSetEntitiesError.bind(this)),
 
+      on(this.actions.setApiFilter, this.onSetApiFilter.bind(this)),
       on(this.actions.setSelectedEntity, this.onSetSelectedEntity.bind(this)),
       on(this.actions.findByKey, this.onFindByKey.bind(this)),
       on(this.actions.save, this.onSave.bind(this)),
@@ -134,7 +136,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
   }
 
-  private createObservables() {
+  private createSelectors() {
 
     const storeKey = this.entityConfig.storeKey;
 
@@ -150,9 +152,9 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     );
 
     this.entities$ = this.store.pipe(
-      select(appState => appState[storeKey].collection),
-      map(collection => {
-        return collection.entityStates.map(entityState => entityState.entity)
+      select(appState => appState[storeKey].collection.entityStates),
+      map(entityStates => {
+        return entityStates.map(entityState => entityState.entity);
       })
     );
     this.entityStates$ = this.store.select(appState => appState[storeKey].collection.entityStates);
@@ -222,19 +224,14 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
 
     // We are setting apiFilter right away, but the status / isBusy indication will be
     // triggered in constructApiCall$ depending on delay set in entityStoreConfig.busyIndicationDelay
-    return {
-      ...state,
-      collection: {
-        ...state.collection,
-        apiFilter: actionProps.apiFilter
-      }
-    };
+    this.store.dispatch(this.actions.setApiFilter({ apiFilter: actionProps.apiFilter }))
 
+    return state;
   }
 
-  private onFindByKey(state, actionProps: {key: number | string}) {
+  private onFindByKey(state, actionProps: {key: number | string, filter?: any}) {
 
-    this.constructApiCall$(SUB_STORE_KEY_SELECTED_ENTITY, this.findByKey$(actionProps.key), ENTITY_STORE_STATUS_LOADING, actionProps.key)
+    this.constructApiCall$(SUB_STORE_KEY_SELECTED_ENTITY, this.findByKey$(actionProps.key, actionProps.filter), ENTITY_STORE_STATUS_LOADING, actionProps.key)
       .subscribe(entity => {
         this.store.dispatch(this.actions.setSelectedEntity({
           entity,
@@ -293,6 +290,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
           return {
             isBusy: false,
             status: actionProps.status,
+            error: null,
             entity
           } as EntityState<T>;
         }),
@@ -328,6 +326,16 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       }
     };
 
+  }
+
+  onSetApiFilter(state, actionProps: {apiFilter: any}) {
+    return {
+      ...state,
+      collection: {
+        ...state.collection,
+        apiFilter: actionProps.apiFilter
+      }
+    };
   }
 
   onSetSelectedEntity(state, actionProps: {entity: T, status: string}) {

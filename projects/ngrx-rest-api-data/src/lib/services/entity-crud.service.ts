@@ -41,7 +41,7 @@ export class EntityCrudService<T> {
 
   }
 
-  findAll$(filter: any = null): Observable<EntityStorePage<T>> {
+  findAll$(filter?: any): Observable<EntityStorePage<T>> {
 
     return this.httpClient
       .get(`${this.getApiEndpoint()}${EntityCrudService.getQueryString(filter)}`, { observe: 'response' })
@@ -57,10 +57,10 @@ export class EntityCrudService<T> {
       );
   }
 
-  findByKey$(key: any, filter: any = null): Observable<T> {
+  findByKey$(key: any, filter?: any): Observable<T> {
 
     return this.httpClient
-      .get<T>(`${this.getApiEndpoint()}/${key}`, { observe: 'response' })
+      .get<T>(`${this.getApiEndpoint()}/${key}${EntityCrudService.getQueryString(filter)}`, { observe: 'response' })
       .pipe(
         mergeMap(httpResponse => {
           return this.processEntityHttpResponse(httpResponse, { key, filter });
