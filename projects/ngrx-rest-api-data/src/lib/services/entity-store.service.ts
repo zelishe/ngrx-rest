@@ -1,12 +1,12 @@
 import { createAction, createReducer, on, props, select, Store } from '@ngrx/store';
 import { EntityStoreConfig } from '../models/entity-store-config';
-import { HttpClient } from '@angular/common/http';
 import { EntityCrudService } from './entity-crud.service';
 import { catchError, delay, filter, map, startWith, take, tap } from 'rxjs/operators';
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { EntityCollectionState, EntityState, EntityStoreState } from '../models/entity-state';
 import { EntityStorePage } from '../models/entity-store-page';
 import * as deepEqual from 'fast-deep-equal';
+import { HttpClient } from '@angular/common/http';
 
 export const SUB_STORE_KEY_SELECTED_ENTITY = 'selectedEntity';
 export const SUB_STORE_KEY_ENTITIES = 'entities';
