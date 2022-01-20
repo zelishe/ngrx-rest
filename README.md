@@ -246,14 +246,14 @@ This method sends POST or PUT request to save entity data on the backend
  - **IMPORTANT** if this entity is present in collection part of the state, it will be updated there as well, including a switch to 'saving' status
  - **IMPORTANT** if this entity is NOT present in collection part of the state, it's not added to collection
 
-**deleteByKey(key: any)**
+**deleteByKey(key: any, filter?: any)**
 
-Request: DELETE + {apiUrl}/{apiPath}/{key}
+Request: DELETE + {apiUrl}/{apiPath}/{key}?filterParam1=x&filterParam2=y
 
  - After busyIndicationDelay has passed and if data has not yet arrived entityStoreState.selectedEntity switches to { isBusy: true, status: 'deleting' }
  - Server response is processed by parseEntityHttpResponse
  - Server response is put into updates the "selectedEntity" part of the appropriate EntityStoreState.
- - selectedEntity is switched to { isBusy: false, status: 'saved' }
+ - selectedEntity is switched to { isBusy: false, status: 'deleted' }
  - **IMPORTANT** If this entity is present in "collection" part of the state, it will be removed from there as well. That entity state will also switch to 'deleting' status, when appropriate event will be fired.
 
 ## <a id="SettingStoreStateManually"></a> Setting store state manually

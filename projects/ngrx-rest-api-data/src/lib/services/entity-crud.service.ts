@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Observable, of, pipe, throwError } from 'rxjs';
+import { Observable, of, throwError } from 'rxjs';
 import { catchError, map, mergeMap, take } from 'rxjs/operators';
 import {
   defaultEntityConfig,
@@ -87,12 +87,12 @@ export class EntityCrudService<T> {
     );
   }
 
-  deleteByKey$(key: number): Observable<T> {
+  deleteByKey$(key: number, filter?: any): Observable<T> {
     return this.httpClient
-      .delete(`${this.getApiEndpoint()}/${key}`, { observe: 'response' })
+      .delete(`${this.getApiEndpoint()}/${key}${EntityCrudService.getQueryString(filter)}`, { observe: 'response' })
       .pipe(
         mergeMap((httpResponse: HttpResponse<T>) => {
-          return this.processEntityHttpResponse(httpResponse, { key });
+          return this.processEntityHttpResponse(httpResponse, { key, filter });
         }),
         catchError(EntityCrudService.onError)
       );

@@ -5,7 +5,7 @@ import { catchError, delay, filter, map, startWith, take, tap } from 'rxjs/opera
 import { BehaviorSubject, combineLatest, Observable, of } from 'rxjs';
 import { EntityCollectionState, EntityState, EntityStoreState } from '../models/entity-state';
 import { EntityStorePage } from '../models/entity-store-page';
-import * as deepEqual from 'fast-deep-equal';
+import deepEqual from 'deep-equal';
 import { HttpClient } from '@angular/common/http';
 
 export const SUB_STORE_KEY_SELECTED_ENTITY = 'selectedEntity';
@@ -98,7 +98,7 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
       findByKey: createAction(`[EntityStore][${this.entityName}] findByKey`, props<{key: number | string, filter?: any}>()),
       save: createAction(`[EntityStore][${this.entityName}] save`, props<{entity: T}>()),
       onAfterSave: createAction(`[EntityStore][${this.entityName}] onAfterSave`, props<{entity: T}>()),
-      deleteByKey: createAction(`[EntityStore][${this.entityName}] deleteByKey`, props<{key: any}>()),
+      deleteByKey: createAction(`[EntityStore][${this.entityName}] deleteByKey`, props<{key: any, filter?: any}>()),
       onAfterDeleteByKey: createAction(`[EntityStore][${this.entityName}] onAfterDeleteByKey`, props<{entity: T}>()),
       setSelectedEntityBusyIndication: createAction(`[EntityStore][${this.entityName}] setSelectedEntityBusyIndication`, props<{isBusy: boolean, status: string, key?: any}>()),
       setSelectedEntityError: createAction(`[EntityStore][${this.entityName}] setSelectedEntityError`, props<{error: any}>()),
@@ -203,8 +203,8 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     this.store.dispatch(this.actions.save({entity}));
   }
 
-  public deleteByKey(key: any) {
-    this.store.dispatch(this.actions.deleteByKey({key}));
+  public deleteByKey(key: any, filter?: any) {
+    this.store.dispatch(this.actions.deleteByKey({key, filter}));
   }
 
   // =================================================================================================================
@@ -255,11 +255,11 @@ export class EntityStoreService<T> extends EntityCrudService<T> {
     return {...state};
   }
 
-  private onDeleteByKey(state, actionProps: {key: any}) {
+  private onDeleteByKey(state, actionProps: {key: any, filter?: any}) {
 
     this.constructApiCall$(
       SUB_STORE_KEY_SELECTED_ENTITY,
-      this.deleteByKey$(actionProps.key),
+      this.deleteByKey$(actionProps.key, actionProps.filter),
       ENTITY_STORE_STATUS_DELETING,
       actionProps.key
     )
