@@ -1,0 +1,36 @@
+{
+  "name": "ngrx-rest",
+  "version": "1.0.0",
+  "description": "A practical reactive REST API data store for Angular and ngrx",
+  "author": "Sergei Zelentsov <sergei@tapkey.pro>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zelishe/ngrx-rest"
+  },
+  "bugs": {
+    "url": "https://github.com/zelishe/ngrx-rest/issues"
+  },
+  "keywords": [
+    "angular",
+    "ngrx",
+    "rest",
+    "api",
+    "store",
+    "state",
+    "reactive"
+  ],
+  "dependencies": {
+    "tslib": "^2.0.0",
+    "@angular/core": ">=8",
+    "@ngrx/store": ">=8",
+    "deep-equal": ">=2",
+    "rxjs": ">=6"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=8",
+    "@ngrx/store": ">=8",
+    "deep-equal": ">=2",
+    "rxjs": ">=6"
+  }
+}

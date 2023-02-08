@@ -1,0 +1,68 @@
+{
+  "name": "ngrx-rest",
+  "version": "1.0.0",
+  "description": "A practical reactive REST API data store for Angular and ngrx",
+  "author": "Sergei Zelentsov <sergei@tapkey.pro>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zelishe/ngrx-rest"
+  },
+  "bugs": {
+    "url": "https://github.com/zelishe/ngrx-rest/issues"
+  },
+  "keywords": [
+    "angular",
+    "ngrx",
+    "rest",
+    "api",
+    "store",
+    "state",
+    "reactive"
+  ],
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build && cpx ./*.md ./dist/ngrx-rest",
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e",
+    "publish": "npm run build && cd dist/ngrx-rest && npm publish"
+  },
+  "private": false,
+  "dependencies": {
+    "@angular/common": "~13.1.2",
+    "@angular/compiler": "~13.1.2",
+    "@angular/core": "~13.1.2",
+    "@ngrx/store": "^13.0.2",
+    "deep-equal": "^2.2.0",
+    "rxjs": "~6.6.6",
+    "tslib": "^2.3.1",
+    "zone.js": "~0.11.4"
+  },
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~13.1.3",
+    "@angular/cli": "~13.1.3",
+    "@angular/compiler-cli": "~13.1.2",
+    "@angular/language-service": "~13.1.2",
+    "@types/deep-equal": "^1.0.1",
+    "@types/jasmine": "~3.6.0",
+    "@types/jasminewd2": "~2.0.3",
+    "@types/node": "^12.11.1",
+    "codelyzer": "^6.0.0",
+    "cpx": "^1.5.0",
+    "generate-license": "^1.0.0",
+    "jasmine-core": "~3.6.0",
+    "jasmine-spec-reporter": "~5.0.0",
+    "karma": "~6.3.11",
+    "karma-chrome-launcher": "~3.1.0",
+    "karma-coverage-istanbul-reporter": "~3.0.2",
+    "karma-jasmine": "~4.0.0",
+    "karma-jasmine-html-reporter": "^1.5.0",
+    "ng-packagr": "^13.1.3",
+    "protractor": "~7.0.0",
+    "ts-node": "~7.0.0",
+    "tslint": "~6.1.0",
+    "typescript": "~4.5.4"
+  }
+}
